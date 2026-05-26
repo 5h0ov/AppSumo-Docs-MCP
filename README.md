@@ -4,7 +4,16 @@ MCP server for the [AppSumo licensing docs](https://docs.licensing.appsumo.com).
 
 ## Usage
 
-**Claude Desktop** — edit `claude_desktop_config.json`:
+**Claude Code** — run:
+
+```bash
+claude mcp add --transport stdio appsumo-docs -- npx -y appsumo-docs-mcp
+```
+
+**Claude Desktop** — edit your config file:
+
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json` (e.g. `C:\Users\YOUR_USERNAME\AppData\Roaming\Claude\claude_desktop_config.json`)
 
 ```json
 {
