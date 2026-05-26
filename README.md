@@ -10,6 +10,20 @@ MCP server for the [AppSumo licensing docs](https://docs.licensing.appsumo.com).
 claude mcp add --transport stdio appsumo-docs -- npx -y appsumo-docs-mcp
 ```
 
+Or add manually to `~/.claude.json`:
+
+```json
+{
+  "mcpServers": {
+    "appsumo-docs": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "appsumo-docs-mcp"]
+    }
+  }
+}
+```
+
 **Claude Desktop** — edit your config file:
 
 - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
