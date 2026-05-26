@@ -2,6 +2,8 @@
 
 MCP server for the [AppSumo licensing docs](https://docs.licensing.appsumo.com). Exposes all documentation pages as resources and a keyword search tool. Docs are scraped weekly and bundled into each npm release so there's nothing to configure.
 
+> **Note:** This is an unofficial, community-built tool and is not affiliated with or endorsed by AppSumo. For the most accurate and up-to-date information, refer to the [official documentation](https://docs.licensing.appsumo.com).
+
 ## Usage
 
 **Claude Code** — run:
