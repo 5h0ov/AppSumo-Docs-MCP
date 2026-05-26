@@ -1,7 +1,7 @@
 export function buildSnippets(
   content: string,
   query: string,
-  maxResults = 10
+  maxResults = 3
 ): string[] {
   const lower = content.toLowerCase();
   const q = query.toLowerCase();
@@ -13,7 +13,7 @@ export function buildSnippets(
     const end = Math.min(content.length, idx + q.length + 200);
     const snippet = content.slice(start, end).replace(/\n+/g, ' ');
     snippets.push(snippet);
-    idx = lower.indexOf(q, idx + q.length);
+    idx = lower.indexOf(q, end);
   }
 
   return snippets;

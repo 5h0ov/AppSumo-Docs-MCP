@@ -19,7 +19,7 @@ describe('buildSnippets', () => {
   });
 
   it('caps results at maxResults', () => {
-    const content = Array.from({ length: 20 }, () => 'MATCH foo').join(' ');
+    const content = Array.from({ length: 20 }, (_, i) => `MATCH ${'x'.repeat(400)} ${i}`).join(' ');
     expect(buildSnippets(content, 'MATCH', 5)).toHaveLength(5);
   });
 
@@ -35,8 +35,8 @@ describe('buildSnippets', () => {
     expect(snippet).not.toMatch(/\n/);
   });
 
-  it('defaults to a max of 10 results', () => {
-    const content = Array.from({ length: 15 }, () => 'HIT x').join(' ');
-    expect(buildSnippets(content, 'HIT').length).toBeLessThanOrEqual(10);
+  it('defaults to a max of 3 results', () => {
+    const content = Array.from({ length: 15 }, (_, i) => `HIT ${'x'.repeat(400)} ${i}`).join(' ');
+    expect(buildSnippets(content, 'HIT').length).toBeLessThanOrEqual(3);
   });
 });
