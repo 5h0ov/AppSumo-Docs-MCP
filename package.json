@@ -10,6 +10,7 @@
     "documentation",
     "model-context-protocol"
   ],
+  "license": "MIT",
   "type": "module",
   "bin": {
     "appsumo-docs-mcp": "bin/cli.js"
