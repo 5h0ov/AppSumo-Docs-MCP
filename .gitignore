@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build output (gitignored but bundled in npm package via 'prepare' script)
+dist/
+
+# Environment
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+
+# Local test scratchpads
+test/
+tmp/
+scratch/
+
+# Superpowers specs/plans (internal tooling only)
+docs/superpowers/
+
+misc/

@@ -1,0 +1,54 @@
+name: Update AppSumo Docs
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'   # Every Sunday at midnight UTC
+  workflow_dispatch:        # Allow manual trigger from GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  scrape-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright browser
+        run: npx playwright install chromium --with-deps
+
+      - name: Run scraper
+        run: npm run scrape
+
+      - name: Check for doc changes
+        id: diff
+        run: |
+          git diff --quiet docs/ && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Configure git
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Commit docs, bump version, publish
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          git add docs/
+          git commit -m "chore: auto-update AppSumo docs [skip ci]"
+          npm version patch --no-git-tag-version
+          git add package.json
+          git commit -m "chore: bump version [skip ci]"
+          git push
+          npm publish
