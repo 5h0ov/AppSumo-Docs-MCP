@@ -57,7 +57,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
     {
       name: 'search_appsumo_docs',
-      description: 'Search the AppSumo licensing documentation for a keyword or phrase',
+      description: 'Search the AppSumo licensing documentation for a keyword or phrase. Use this first — it returns relevant snippets with context across all pages. Prefer this over get_appsumo_doc unless you need the full content of a specific page.',
       inputSchema: {
         type: 'object' as const,
         properties: {
@@ -66,37 +66,80 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ['query'],
       },
     },
+    {
+      name: 'list_appsumo_docs',
+      description: 'List all available AppSumo documentation pages. Use this to discover which pages exist before fetching one with get_appsumo_doc.',
+      inputSchema: {
+        type: 'object' as const,
+        properties: {},
+        required: [],
+      },
+    },
+    {
+      name: 'get_appsumo_doc',
+      description: 'Fetch the full content of a specific AppSumo documentation page by filename. Only use this when search_appsumo_docs snippets are insufficient and you need the complete content of a particular page. Use list_appsumo_docs first to find the correct filename.',
+      inputSchema: {
+        type: 'object' as const,
+        properties: {
+          filename: { type: 'string', description: 'The filename of the doc page (e.g. webhook_security_appsumo_licensing_api_v2.md). Use list_appsumo_docs to see all available filenames.' },
+        },
+        required: ['filename'],
+      },
+    },
   ],
 }));
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  if (request.params.name !== 'search_appsumo_docs') {
-    throw new Error(`Unknown tool: ${request.params.name}`);
+  const { name, arguments: args } = request.params;
+
+  if (name === 'search_appsumo_docs') {
+    const query = String(args?.query ?? '');
+    if (!query.trim()) {
+      return { content: [{ type: 'text' as const, text: 'No query provided.' }] };
+    }
+
+    const files = await getDocFiles();
+    const allResults: string[] = [];
+
+    for (const file of files) {
+      if (allResults.length >= 10) break;
+      const content = await fs.readFile(path.join(DOCS_DIR, file), 'utf-8');
+      const snippets = buildSnippets(content, query);
+      for (const snippet of snippets) {
+        allResults.push(`--- From ${file} ---\n...${snippet}...`);
+      }
+    }
+
+    return {
+      content: [{
+        type: 'text' as const,
+        text: allResults.length ? allResults.join('\n\n') : 'No results found.',
+      }],
+    };
   }
 
-  const query = String(request.params.arguments?.query ?? '');
-  if (!query.trim()) {
-    return { content: [{ type: 'text' as const, text: 'No query provided.' }] };
+  if (name === 'list_appsumo_docs') {
+    const files = await getDocFiles();
+    const list = files.map(f => `- ${f}`).join('\n');
+    return {
+      content: [{ type: 'text' as const, text: list || 'No documentation files found.' }],
+    };
   }
 
-  const files = await getDocFiles();
-  const allResults: string[] = [];
-
-  for (const file of files) {
-    if (allResults.length >= 10) break;
-    const content = await fs.readFile(path.join(DOCS_DIR, file), 'utf-8');
-    const snippets = buildSnippets(content, query);
-    for (const snippet of snippets) {
-      allResults.push(`--- From ${file} ---\n...${snippet}...`);
+  if (name === 'get_appsumo_doc') {
+    const filename = String(args?.filename ?? '');
+    if (!filename.endsWith('.md') || filename.includes('/') || filename.includes('..')) {
+      throw new Error('Invalid filename');
+    }
+    try {
+      const content = await fs.readFile(path.join(DOCS_DIR, filename), 'utf-8');
+      return { content: [{ type: 'text' as const, text: content }] };
+    } catch {
+      throw new Error(`File not found: ${filename}. Use list_appsumo_docs to see available files.`);
     }
   }
 
-  return {
-    content: [{
-      type: 'text' as const,
-      text: allResults.length ? allResults.join('\n\n') : 'No results found.',
-    }],
-  };
+  throw new Error(`Unknown tool: ${name}`);
 });
 
 const transport = new StdioServerTransport();

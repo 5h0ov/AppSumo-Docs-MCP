@@ -11,6 +11,14 @@
     "model-context-protocol"
   ],
   "license": "MIT",
+  "homepage": "https://github.com/5h0ov/appsumo-docs-mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/5h0ov/appsumo-docs-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/5h0ov/appsumo-docs-mcp/issues"
+  },
   "type": "module",
   "bin": {
     "appsumo-docs-mcp": "bin/cli.js"
