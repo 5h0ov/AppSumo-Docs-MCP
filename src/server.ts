@@ -19,14 +19,31 @@ const server = new Server(
   { capabilities: { resources: {}, tools: {} } }
 );
 
+let cachedFiles: string[] | null = null;
+
 async function getDocFiles(): Promise<string[]> {
+  if (cachedFiles) return cachedFiles;
   try {
     const entries = await fs.readdir(DOCS_DIR, { withFileTypes: true });
-    return entries
+    cachedFiles = entries
       .filter(e => e.isFile() && e.name.endsWith('.md'))
       .map(e => e.name);
+    return cachedFiles;
   } catch {
     return [];
+  }
+}
+
+async function getDocTitle(filename: string): Promise<string> {
+  try {
+    const fd = await fs.open(path.join(DOCS_DIR, filename), 'r');
+    const buf = Buffer.alloc(200);
+    await fd.read(buf, 0, 200, 0);
+    await fd.close();
+    const firstLine = buf.toString('utf-8').split('\n')[0].replace(/^#\s*/, '').trim();
+    return firstLine || filename;
+  } catch {
+    return filename;
   }
 }
 
@@ -120,9 +137,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   if (name === 'list_appsumo_docs') {
     const files = await getDocFiles();
-    const list = files.map(f => `- ${f}`).join('\n');
+    const lines = await Promise.all(files.map(async f => {
+      const title = await getDocTitle(f);
+      return `- ${title} → \`${f}\``;
+    }));
     return {
-      content: [{ type: 'text' as const, text: list || 'No documentation files found.' }],
+      content: [{ type: 'text' as const, text: lines.join('\n') || 'No documentation files found.' }],
     };
   }
 

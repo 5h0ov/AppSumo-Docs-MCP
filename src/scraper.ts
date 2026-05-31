@@ -12,12 +12,10 @@ const CONTENT_SELECTORS = ['main', 'article', '[role="main"]', '.content', '.doc
 
 const turndown = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
 
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_|_$/g, '')
-    .substring(0, 80);
+function urlToFilename(url: string): string {
+  const pathname = new URL(url).pathname;
+  const base = path.basename(pathname, '.html') || 'index';
+  return base + '.md';
 }
 
 function extractLinks(html: string, currentUrl: string): string[] {
@@ -46,6 +44,10 @@ async function sleep(ms: number): Promise<void> {
 
 async function main(): Promise<void> {
   await fs.mkdir(DOCS_DIR, { recursive: true });
+  const existing = await fs.readdir(DOCS_DIR).catch(() => [] as string[]);
+  await Promise.all(
+    existing.filter(f => f.endsWith('.md')).map(f => fs.unlink(path.join(DOCS_DIR, f)))
+  );
 
   const browser = await chromium.launch();
   const context = await browser.newContext({
@@ -101,6 +103,7 @@ async function main(): Promise<void> {
       }
 
       await page.evaluate(() => {
+        document.querySelectorAll('img[src^="data:"]').forEach(el => el.remove());
         document.querySelectorAll(
           '.line-numbers-wrapper,.line-number,[class*="line-num"]'
         ).forEach(el => el.remove());
@@ -126,8 +129,8 @@ async function main(): Promise<void> {
         contentHtml = await page.$eval('body', el => el.innerHTML).catch(() => '');
       }
 
-      const markdown = turndown.turndown(contentHtml);
-      const filename = slugify(title || path.basename(new URL(url).pathname) || 'index') + '.md';
+      const markdown = turndown.turndown(contentHtml).replace(/!\[[^\]]*\]\(data:image[^)]+\)/g, '');
+      const filename = urlToFilename(url);
 
       await fs.writeFile(
         path.join(DOCS_DIR, filename),

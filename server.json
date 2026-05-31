@@ -1,0 +1,22 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.5h0ov/appsumo-docs-mcp",
+  "title": "AppSumo Docs MCP",
+  "description": "MCP server for the AppSumo licensing documentation. Exposes all docs as resources with keyword search and full-page fetch tools.",
+  "websiteUrl": "https://www.npmjs.com/package/appsumo-docs-mcp",
+  "repository": {
+    "url": "https://github.com/5h0ov/appsumo-docs-mcp",
+    "source": "github"
+  },
+  "version": "1.0.4",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "appsumo-docs-mcp",
+      "version": "1.0.4",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
