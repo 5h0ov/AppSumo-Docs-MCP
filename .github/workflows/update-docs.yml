@@ -17,7 +17,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
@@ -32,7 +32,20 @@ jobs:
       - name: Check for doc changes
         id: diff
         run: |
-          git diff --quiet docs/ && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
+          changed_files=$(git diff --name-only docs/)
+          new_files=$(git ls-files --others --exclude-standard docs/)
+          all_changed=$(printf "%s\n%s" "$changed_files" "$new_files" | grep -v '^$' || true)
+
+          if [ -z "$all_changed" ]; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No doc changes detected, skipping publish."
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Doc changes detected:"
+            echo "$all_changed" | while read -r file; do
+              echo "  changed → $file"
+            done
+          fi
 
       - name: Configure git
         if: steps.diff.outputs.changed == 'true'
