@@ -1,6 +1,8 @@
 # appsumo-docs-mcp
 
-MCP server for the [AppSumo licensing docs](https://docs.licensing.appsumo.com). Exposes all documentation pages as resources and a keyword search tool. Docs are scraped weekly and bundled into each npm release so there's nothing to configure.
+MCP server for the [AppSumo licensing docs](https://docs.licensing.appsumo.com). Exposes all documentation pages as resources, plus tools to search, list, and fetch them. Docs are scraped weekly and bundled into each npm release so there's nothing to configure.
+
+Everything runs locally from the bundled docs — no API key, no network calls at runtime, and it keeps working offline.
 
 > **Note:** This is an unofficial, community-built tool and is not affiliated with or endorsed by AppSumo. For the most accurate and up-to-date information, refer to the [official documentation](https://docs.licensing.appsumo.com).
 
@@ -84,7 +86,9 @@ Or add manually to `~/.claude.json`:
 ## What's included
 
 - **Resources** — all documentation pages, accessible as `docs:///filename.md`
-- **Tool: `search_appsumo_docs`** — keyword search across all docs with surrounding context
+- **Tool: `search_appsumo_docs`** — keyword/phrase search across all docs, returning relevant snippets with surrounding context (stemmed fuzzy matching). Start here.
+- **Tool: `list_appsumo_docs`** — list every available doc page with its title and filename, to discover what exists.
+- **Tool: `get_appsumo_doc`** — fetch the full content of a specific page by filename, for when search snippets aren't enough.
 
 ## Development
 

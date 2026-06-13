@@ -14,8 +14,17 @@ import { buildSnippets } from './search.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DOCS_DIR = path.join(__dirname, '..', 'docs');
 
+async function getVersion(): Promise<string> {
+  try {
+    const pkg = await fs.readFile(path.join(__dirname, '..', 'package.json'), 'utf-8');
+    return JSON.parse(pkg).version ?? '0.0.0';
+  } catch {
+    return '0.0.0';
+  }
+}
+
 const server = new Server(
-  { name: 'appsumo-docs-mcp', version: '1.0.0' },
+  { name: 'appsumo-docs-mcp', version: await getVersion() },
   { capabilities: { resources: {}, tools: {} } }
 );
 
