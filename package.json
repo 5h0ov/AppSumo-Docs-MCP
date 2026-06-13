@@ -33,6 +33,7 @@
     "prepare": "npm run build",
     "scrape": "tsx src/scraper.ts",
     "start": "node bin/cli.js",
+    "inspect": "npm run build && npx @modelcontextprotocol/inspector node bin/cli.js",
     "test": "vitest run",
     "test:watch": "vitest"
   },

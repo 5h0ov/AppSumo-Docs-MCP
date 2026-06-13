@@ -1,8 +1,8 @@
 # appsumo-docs-mcp
 
-MCP server for the [AppSumo licensing docs](https://docs.licensing.appsumo.com). Exposes all documentation pages as resources, plus tools to search, list, and fetch them. Docs are scraped weekly and bundled into each npm release so there's nothing to configure.
+An MCP server that gives your AI assistant (Claude, Cursor, and others) the full [AppSumo licensing docs](https://docs.licensing.appsumo.com) — so it can answer your questions and help you build against the licensing API without you digging through the docs yourself. The pages are refreshed every week and bundled right in, so there's nothing to set up.
 
-Everything runs locally from the bundled docs — no API key, no network calls at runtime, and it keeps working offline.
+Everything works straight from the bundled docs — no API key, no account, and no internet needed once it's installed.
 
 > **Note:** This is an unofficial, community-built tool and is not affiliated with or endorsed by AppSumo. For the most accurate and up-to-date information, refer to the [official documentation](https://docs.licensing.appsumo.com).
 
@@ -85,10 +85,10 @@ Or add manually to `~/.claude.json`:
 
 ## What's included
 
-- **Resources** — all documentation pages, accessible as `docs:///filename.md`
-- **Tool: `search_appsumo_docs`** — keyword/phrase search across all docs, returning relevant snippets with surrounding context (stemmed fuzzy matching). Start here.
-- **Tool: `list_appsumo_docs`** — list every available doc page with its title and filename, to discover what exists.
-- **Tool: `get_appsumo_doc`** — fetch the full content of a specific page by filename, for when search snippets aren't enough.
+- **All the docs** — every AppSumo licensing page is bundled in, ready to read.
+- **Search** (`search_appsumo_docs`) — ask a question or type a few words and get back the most relevant passages, with your words highlighted. It's forgiving about wording (e.g. "activate" also finds "activation").
+- **List** (`list_appsumo_docs`) — see all the pages that are available.
+- **Read** (`get_appsumo_doc`) — open a full page when you want all the details.
 
 ## Development
 

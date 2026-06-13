@@ -14,6 +14,7 @@ import { buildSnippets } from './search.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DOCS_DIR = path.join(__dirname, '..', 'docs');
 
+/** Read the package version so the server reports its real release number. */
 async function getVersion(): Promise<string> {
   try {
     const pkg = await fs.readFile(path.join(__dirname, '..', 'package.json'), 'utf-8');
@@ -30,6 +31,7 @@ const server = new Server(
 
 let cachedFiles: string[] | null = null;
 
+/** List the bundled doc filenames, cached after the first read. */
 async function getDocFiles(): Promise<string[]> {
   if (cachedFiles) return cachedFiles;
   try {
@@ -43,6 +45,7 @@ async function getDocFiles(): Promise<string[]> {
   }
 }
 
+/** Read a doc's title from its first heading line, falling back to the filename. */
 async function getDocTitle(filename: string): Promise<string> {
   try {
     const fd = await fs.open(path.join(DOCS_DIR, filename), 'r');
@@ -125,21 +128,30 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     const files = await getDocFiles();
-    const allResults: string[] = [];
+    const matches: { file: string; text: string; score: number }[] = [];
 
     for (const file of files) {
-      if (allResults.length >= 10) break;
       const content = await fs.readFile(path.join(DOCS_DIR, file), 'utf-8');
-      const snippets = buildSnippets(content, query);
-      for (const snippet of snippets) {
-        allResults.push(`--- From ${file} ---\n...${snippet}...`);
+      for (const { text, score } of buildSnippets(content, query)) {
+        matches.push({ file, text, score });
       }
     }
+
+    // Rank the densest matches across all pages first, then keep the top 10.
+    matches.sort((a, b) => b.score - a.score);
+    const top = matches.slice(0, 10);
+
+    const formatted = await Promise.all(
+      top.map(async ({ file, text }) => {
+        const title = await getDocTitle(file);
+        return `### ${title} (\`${file}\`)\n...${text}...`;
+      })
+    );
 
     return {
       content: [{
         type: 'text' as const,
-        text: allResults.length ? allResults.join('\n\n') : 'No results found.',
+        text: formatted.length ? formatted.join('\n\n') : 'No results found.',
       }],
     };
   }

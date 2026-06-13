@@ -2,7 +2,7 @@ import { chromium } from 'playwright';
 import TurndownService from 'turndown';
 import fs from 'fs/promises';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DOCS_DIR = path.join(__dirname, '..', 'docs');
@@ -18,7 +18,16 @@ function urlToFilename(url: string): string {
   return base + '.md';
 }
 
-function extractLinks(html: string, currentUrl: string): string[] {
+// Static assets that may be linked from the page head/nav but aren't docs pages.
+const ASSET_EXTENSIONS =
+  /\.(css|js|mjs|map|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|eot|pdf|zip|xml|json|txt|mp4|webm)$/i;
+
+/**
+ * Collect the documentation links from a page's HTML: same-host only, with hashes
+ * and query strings stripped and static assets excluded. Relative hrefs are resolved
+ * against `currentUrl`.
+ */
+export function extractLinks(html: string, currentUrl: string): string[] {
   const baseHostname = new URL(BASE_URL).hostname;
   const links: string[] = [];
   const hrefRegex = /href="([^"]+)"/g;
@@ -26,11 +35,11 @@ function extractLinks(html: string, currentUrl: string): string[] {
   while ((match = hrefRegex.exec(html)) !== null) {
     try {
       const resolved = new URL(match[1], currentUrl);
-      if (resolved.hostname === baseHostname) {
-        resolved.hash = '';
-        resolved.search = '';
-        links.push(resolved.toString());
-      }
+      if (resolved.hostname !== baseHostname) continue;
+      if (ASSET_EXTENSIONS.test(resolved.pathname)) continue;
+      resolved.hash = '';
+      resolved.search = '';
+      links.push(resolved.toString());
     } catch {
       // skip malformed hrefs
     }
@@ -139,7 +148,9 @@ async function main(): Promise<void> {
       );
       process.stdout.write(`saved → ${filename}\n`);
 
-      const links = extractLinks(contentHtml, url);
+      // Crawl the whole page (nav/sidebar/footer), so a layout change can't drop pages.
+      const pageHtml = await page.content();
+      const links = extractLinks(pageHtml, url);
       for (const link of links) {
         if (!visited.has(link) && !queue.includes(link)) {
           queue.push(link);
@@ -157,7 +168,11 @@ async function main(): Promise<void> {
   console.log(`\nComplete. Pages scraped: ${visited.size}`);
 }
 
-main().catch(err => {
-  console.error('Scraper error:', err);
-  process.exit(1);
-});
+// Only crawl when run directly (npm run scrape), not when imported for tests.
+const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isMain) {
+  main().catch(err => {
+    console.error('Scraper error:', err);
+    process.exit(1);
+  });
+}
