@@ -2,6 +2,10 @@
 
 # [#](#appsumo-licensing-guide) AppSumo Licensing Guide
 
+New: Set up licensing with AI
+
+Drop the AppSumo Licensing skill into Claude Code (or any agentic AI) and it'll wire up your webhook handler, OAuth flow, and license-key storage for you. [Get started →](/quick-start/quick-start__skill.html)
+
 ## [#](#introduction) Introduction
 
 AppSumo licensing helps customers seamlessly activate their accounts with your product immediately after purchasing on AppSumo.

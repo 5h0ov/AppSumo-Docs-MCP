@@ -16,4 +16,4 @@ OAuth (**O**pen **Auth**orization) is an open standard for access delegation, co
 
 ([https://wikipedia.org (opens new window)](https://wikipedia.org/))
 
-← [Overview](/quick-start/quick-start__overview.html) [Getting started](/licensing/licensing__getting_started.html) →
+← [Set up licensing with AI](/quick-start/quick-start__skill.html) [Getting started](/licensing/licensing__getting_started.html) →

@@ -78,4 +78,4 @@ You can access your License History UI in the API settings section of the [AppSu
     *   OAuth, see [User login (OAuth)](/licensing/licensing__overview.html)
     *   Webhooks, see [Webhooks](/webhook/webhook__overview.html)
 
-← [Home](/) [Overview](/licensing/licensing__overview.html) →
+← [Home](/) [Set up licensing with AI](/quick-start/quick-start__skill.html) →
