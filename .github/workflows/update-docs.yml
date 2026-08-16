@@ -4,9 +4,15 @@ on:
   schedule:
     - cron: '0 0 * * 0'   # Every Sunday at midnight UTC
   workflow_dispatch:        # Allow manual trigger from GitHub UI
+    inputs:
+      force_publish:
+        description: 'Publish current version to npm even if docs are unchanged (e.g. catch-up after a failed publish)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   scrape-and-publish:
@@ -17,7 +23,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
@@ -53,10 +59,8 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
 
-      - name: Commit docs, bump version, publish
+      - name: Commit docs and bump version
         if: steps.diff.outputs.changed == 'true'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           git add docs/
           git commit -m "chore: auto-update AppSumo docs [skip ci]"
@@ -64,4 +68,7 @@ jobs:
           git add package.json
           git commit -m "chore: bump version [skip ci]"
           git push
-          npm publish
+
+      - name: Publish to npm
+        if: steps.diff.outputs.changed == 'true' || github.event.inputs.force_publish == 'true'
+        run: npm publish
